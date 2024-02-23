@@ -40,8 +40,8 @@ wifiManager.update();       // Call update in your main loop to manage WiFi conn
 ```
 ## License and Credits
 
-This project, developed by Bradley James Hammond / Distracted Labs, is licensed under the GNU General Public License v3.0. Full license text is available in the [LICENSE](LICENSE) file.
+This project, developed by Bradley James Hammond / Martian Tux, is licensed under the GNU General Public License v3.0. Full license text is available in the [LICENSE](LICENSE) file.
 
-Contributions, feedback, and adaptations are welcome in accordance with the terms of this license. Please credit "Bradley James Hammond, Distracted Labs" and provide a link back to the original source when using this project or its components.
+Contributions, feedback, and adaptations are welcome in accordance with the terms of this license. Please credit and provide a link back to the original source when using this project or its components.
 
 For inquiries or further information, contact hello@bradleyjh.com or hello@distractedlabs.cc.
