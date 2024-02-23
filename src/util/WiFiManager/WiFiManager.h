@@ -12,11 +12,13 @@
 
 #include <Arduino.h>
 #include <WiFi.h>
+#include <ESPmDNS.h>
 #include "util/LEDStatusManager/LEDStatusManager.h"
 
 class WiFiManager {
 public:
     WiFiManager();
+    void setup();                               // Takes care of anything that needs to be initialized in setup()
     void update();                              // Periodically called to manage WiFi connection
 
 private:

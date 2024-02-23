@@ -14,6 +14,23 @@ WiFiManager::WiFiManager() : _lastCheckTime(0), _attemptingConnection(false), _r
     logDebug("WiFiManager initialized");
 }
 
+void WiFiManager::setup() {
+    WiFi.mode(WIFI_STA);
+
+    if (!MDNS.begin(HOSTNAME)) {
+        logDebug("Failed to start mDNS responder");
+        return;
+    }
+    logDebug("mDNS responder started");
+
+    // Register mDNS services
+    for (const auto& service : mdnsServices) {
+        MDNS.addService(service.service, service.protocol, service.port);
+        logDebug((String("Registered mDNS service: ") + service.service).c_str());
+    }
+    logDebug("WiFiManager setup complete");
+}
+
 void WiFiManager::update() {
     if (WiFi.status() == WL_CONNECTED && !_attemptingConnection) { return; }  // If connected, no further action needed
 
