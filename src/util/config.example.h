@@ -46,4 +46,7 @@ const MDNSService mdnsServices[] = {
     {"custom", "tcp", 5000}  // A custom service on port 5000
 };
 
+// Log buffer line size
+#define MAX_BUFFER_SIZE 100
+
 #endif // config_h

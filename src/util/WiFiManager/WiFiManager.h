@@ -24,6 +24,7 @@
 #include <WiFi.h>
 #include <ESPmDNS.h>
 #include "util/LEDStatusManager/LEDStatusManager.h"
+#include "util/LogManager/LogManager.h"
 
 class WiFiManager {
 public:
