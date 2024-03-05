@@ -33,7 +33,7 @@ void TimeManager::setup(const char* ntpServer, long timezoneOffset) {
 
 void TimeManager::update() {
     unsigned long currentMillis = millis();
-    if (currentMillis - lastSyncTime >= updateInterval) {
+    if (lastSyncTime || currentMillis - lastSyncTime >= updateInterval) {
         if (WiFi.status() == WL_CONNECTED) {
             syncTime();
             lastSyncTime = currentMillis;
