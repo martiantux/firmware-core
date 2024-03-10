@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * For inquiries, please contact hello@distractedlabs.cc.
+ * For inquiries, please contact martiantux@proton.me | hello@distractedlabs.cc.
  */
 
 #ifndef LogManager_h
@@ -30,34 +30,31 @@ enum LogLevel {
     DEBUG,
     INFO,
     WARN,
-    ERROR,
-    FATAL
+    ERROR
 };
 
 class LogManager {
 public:
-    static LogManager& getInstance() {
-        static LogManager instance; // Singleton instance
+    static LogManager& getInstance() {        // Singleton instance
+        static LogManager instance;
         return instance;
     }
 
-    LogManager(const LogManager&) = delete;            // Delete copy constructor
-    LogManager& operator=(const LogManager&) = delete; // Delete assignment operator
-
     void setup();
-    void log(LogLevel level, const String& message);
     void update();
+    void log(LogLevel level, const String& message);
     String getBuffer();
     String getLastLogs(size_t lastCount);
     void clearBuffer();
 
 private:
-    LogManager(); // Private constructor for singleton
-    ~LogManager() = default; // Default destructor
+    LogManager();                           // Private constructor/destructor for singleton
+    ~LogManager() = default;
+    LogManager(const LogManager&) = delete;
+    LogManager& operator=(const LogManager&) = delete;
 
-    String discordWebhookUrl;
-    LogLevel currentLogLevel;
-    JsonDocument logBuffer;
+    LogLevel currentLogLevel_;
+    JsonDocument logBuffer_;
 
     void sendToDiscord(const String& message);
 };

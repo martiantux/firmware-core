@@ -24,7 +24,6 @@
 #include "util/TimeManager/TimeManager.h"
 #include <WebServer.h>
 
-WiFiManager wifiManager;
 WebServer server(80);
 
 void handleRoot() {
@@ -40,7 +39,7 @@ void handleLogs() {
     htmlContent += "</style>\n</head>\n<body>\n<div id='logContainer'>\n<h2>System Logs</h2>\n<ul>\n";
 
     String logs = LogManager::getInstance().getLastLogs(20);
-    DynamicJsonDocument doc(4096); // Adjust the size according to your log buffer size
+    JsonDocument doc; // Adjust the size according to your log buffer size
     DeserializationError error = deserializeJson(doc, logs);
 
     if (!error) {
@@ -63,11 +62,12 @@ void handleLogs() {
 void setup() {
     LogManager::getInstance().log(INFO, "Devicing starting up");
     Serial.begin(115200);
-    LEDStatusManager::getInstance().setStatus(0);
-    wifiManager.setup();
-
+    WiFiManager::getInstance().setup();
+    LEDStatusManager::getInstance().setup();
     LogManager::getInstance().setup();
-    TimeManager::getInstance().setup("pool.ntp.org", 0);
+    TimeManager::getInstance().setup();
+
+    LEDStatusManager::getInstance().setStatus(0);
 
     server.on("/", handleRoot);
     server.on("/logs", handleLogs);
@@ -82,8 +82,8 @@ void setup() {
 
 void loop() {
     LEDStatusManager::getInstance().update();
-    wifiManager.update();
-    LogManager::getInstance().update();
+    WiFiManager::getInstance().update();
     TimeManager::getInstance().update();
+    LogManager::getInstance().update();
     server.handleClient();
 }

@@ -14,29 +14,28 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * For inquiries, please contact hello@distractedlabs.cc.
+ * For inquiries, please contact martiantux@proton.me | hello@distractedlabs.cc.
  */
 
 #include "util/TimeManager/TimeManager.h"
 
-TimeManager::TimeManager() : timeClient(ntpUDP) {}
+TimeManager::TimeManager() 
+    : ntpUDP_(), 
+      timeClient_(ntpUDP_, NTP_SERVER, TIMEZONE_OFFSET, updateInterval_), 
+      updateInterval_((1000 * 60) * 120), // 120 minutes in milliseconds
+      lastSyncTime_(0) {}
+      
 
-TimeManager::~TimeManager() {}
-
-void TimeManager::setup(const char* ntpServer, long timezoneOffset) {
-    this->ntpServer = ntpServer;
-    this->timezoneOffset = timezoneOffset;
-    timeClient.setPoolServerName(ntpServer);
-    timeClient.setTimeOffset(timezoneOffset);
-    timeClient.begin();
+void TimeManager::setup() {
+    timeClient_.begin();
 }
 
 void TimeManager::update() {
     unsigned long currentMillis = millis();
-    if (lastSyncTime == 0 || currentMillis - lastSyncTime >= updateInterval) {
+    if (lastSyncTime_ == 0 || currentMillis - lastSyncTime_ >= updateInterval_) {
         if (WiFi.status() == WL_CONNECTED) {
             syncTime();
-            lastSyncTime = currentMillis;
+            lastSyncTime_ = currentMillis;
         }
     }
 
@@ -45,7 +44,7 @@ void TimeManager::update() {
 
 void TimeManager::syncTime() {
     LogManager::getInstance().log(INFO, "Attempting time synchronization...");
-    if (!timeClient.forceUpdate()) {
+    if (!timeClient_.forceUpdate()) {
         LogManager::getInstance().log(WARN, "Failed to sync time with NTP server.");
     }
     else {
@@ -54,7 +53,7 @@ void TimeManager::syncTime() {
 }
 
 unsigned long TimeManager::getCurrentTimestamp() {
-    return timeClient.getEpochTime();
+    return timeClient_.getEpochTime();
 }
 
 String TimeManager::getLogTime() {
@@ -65,23 +64,13 @@ String TimeManager::getLogTime() {
 }
 
 String TimeManager::getLongDate() {
-    return timeClient.getFormattedTime() + " - " + timeClient.getDay() + ", " + timeClient.getFormattedTime();
+    return "Unavailable";//timeClient_.getFormattedTime() + " - " + timeClient_.getDay() + ", " + timeClient_.getFormattedTime();
 }
 
 String TimeManager::getShortDate() {
-    return timeClient.getFormattedTime() + " - " + timeClient.getDay();
+    return timeClient_.getFormattedTime() + " - " + timeClient_.getDay();
 }
 
 String TimeManager::getTimeString() {
-    return timeClient.getFormattedTime();
-}
-
-void TimeManager::setNTPServer(const char* ntpServer) {
-    this->ntpServer = ntpServer;
-    timeClient.setPoolServerName(ntpServer);
-}
-
-void TimeManager::setTimezoneOffset(long timezoneOffset) {
-    this->timezoneOffset = timezoneOffset;
-    timeClient.setTimeOffset(timezoneOffset);
+    return timeClient_.getFormattedTime();
 }

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * For inquiries, please contact hello@distractedlabs.cc.
+ * For inquiries, please contact martiantux@proton.me | hello@distractedlabs.cc.
  */
 
 #ifndef WiFiManager_h
@@ -28,20 +28,28 @@
 
 class WiFiManager {
 public:
-    WiFiManager();
-    void setup();                               // Takes care of anything that needs to be initialized in setup()
-    void update();                              // Periodically called to manage WiFi connection
+    static WiFiManager& getInstance() {             // Singleton instance
+        static WiFiManager instance;
+        return instance;
+    }
+    
+    void setup();                                   // Takes care of anything that needs to be initialized in setup()
+    void update();                                  // Periodically called to manage WiFi connection
 
 private:
-    unsigned long _lastCheckTime;               // Tracks time for managing connection attempts
-    bool _attemptingConnection;                 // Indicates if a connection attempt is underway
-    int _reconnectionAttempts;                  // Counts the number of reconnection attempts
+    WiFiManager();                                  // Private constructor/destructor for singleton
+    ~WiFiManager() = default;
+    WiFiManager(const WiFiManager&) = delete;
+    WiFiManager& operator=(const WiFiManager&) = delete;
 
-    void attemptConnection();                   // Initiates a WiFi connection attempt
-    void rebootDevice();                        // Reboots the device in an attempt to correct WiFi module issues
-    unsigned long calculateBackoffDuration();   // Calculates the backoff duration for reconnection attempts
-    void logConnectionStatus();                 // Logs the current WiFi connection status
-    void logDebug(const char* message);         // Utility function for logging debug messages
+    unsigned long lastCheckTime_;                   // Tracks time for managing connection attempts
+    bool attemptingConnection_;                     // Indicates if a connection attempt is underway
+    int reconnectionAttempts_;                      // Counts the number of reconnection attempts
+
+    unsigned long calculateBackoffDuration();       // Calculates the backoff duration for reconnection attempts
+    void attemptConnection();                       // Initiates a WiFi connection attempt
+    void rebootDevice();                            // Reboots the device in an attempt to correct WiFi module issues
+    void logConnectionStatus();                     // Logs the current WiFi connection status
 };
 
 #endif // WiFiManager_h

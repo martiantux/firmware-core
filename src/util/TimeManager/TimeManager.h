@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * For inquiries, please contact hello@distractedlabs.cc.
+ * For inquiries, please contact martiantux@proton.me | hello@distractedlabs.cc.
  */
 
 #ifndef TimeManager_h
@@ -27,33 +27,30 @@
 
 class TimeManager {
 public:
-    static TimeManager& getInstance() {
+    static TimeManager& getInstance() {             // Singleton instance
         static TimeManager instance;
         return instance;
     }
 
-    void setup(const char* ntpServer = "pool.ntp.org", long timezoneOffset = 0);
+    void setup();
     void update();
-    unsigned long getCurrentTimestamp();
+
     String getLogTime();
     String getLongDate();
     String getShortDate();
     String getTimeString();
-    void setNTPServer(const char* ntpServer);
-    void setTimezoneOffset(long timezoneOffset);
+    unsigned long getCurrentTimestamp();
 
 private:
-    TimeManager();
-    ~TimeManager();
+    TimeManager();                                  // Private constructor/destructor for singleton
+    ~TimeManager() = default;
     TimeManager(const TimeManager&) = delete;
     TimeManager& operator=(const TimeManager&) = delete;
 
-    WiFiUDP ntpUDP;
-    NTPClient timeClient;
-    const long updateInterval = 60000; // Sync interval in milliseconds
-    unsigned long lastSyncTime = 0;
-    const char* ntpServer;
-    long timezoneOffset;
+    WiFiUDP ntpUDP_;
+    NTPClient timeClient_;
+    const long updateInterval_; // Sync interval in milliseconds
+    unsigned long lastSyncTime_;
 
     void syncTime();
 };

@@ -14,15 +14,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * For inquiries, please contact hello@distractedlabs.cc.
+ * For inquiries, please contact martiantux@proton.me | hello@distractedlabs.cc.
  */
 
 #include "util/LogManager/LogManager.h"
 
-LogManager::LogManager() : currentLogLevel(INFO) {}
+LogManager::LogManager()
+    : currentLogLevel_(INFO) {}
+
 
 void LogManager::setup() {
-    // setup stuffs
+    // Setup stuffs
+}
+
+void LogManager::update() {
+    // Placeholder for future needs
 }
 
 const char* logLevelToString(LogLevel level) {
@@ -31,7 +37,6 @@ const char* logLevelToString(LogLevel level) {
         case INFO: return "INFO";
         case WARN: return "WARN";
         case ERROR: return "ERROR";
-        case FATAL: return "FATAL";
         default: return "UNKNOWN";
     }
 }
@@ -47,45 +52,51 @@ void LogManager::log(LogLevel level, const String& message) {
     Serial.println(formattedMessage);
 
     // Create a JSON object for the log entry
-    StaticJsonDocument<256> logEntry;
+    JsonDocument logEntry;
     logEntry["time"] = logTime;
     logEntry["level"] = logLevelToString(level);
     logEntry["message"] = message;
 
     // Add the log entry to the log buffer array
-    logBuffer.add(logEntry);
+    logBuffer_.add(logEntry);
 
     // Limit the number of log entries to MAX_LOG_ENTRIES
-    if (logBuffer.size() > MAX_BUFFER_SIZE) {
-        logBuffer.remove(0); // Remove the oldest entry
+    if (logBuffer_.size() > MAX_BUFFER_SIZE) {
+        logBuffer_.remove(0); // Remove the oldest entry
     }
-}
-
-void LogManager::update() {
-    // Placeholder for future needs
 }
 
 String LogManager::getBuffer() {
     String output;
-    serializeJson(logBuffer, output);
+    JsonArray tempBuffer = logBuffer_.to<JsonArray>(); // Create a temporary JsonArray
+    tempBuffer.clear(); // Ensure the temporary buffer is empty
+
+    // Iterate over the original logBuffer in reverse and add each element to the temporary buffer
+    for (int i = logBuffer_.size() - 1; i >= 0; --i) {
+        tempBuffer.add(logBuffer_[i]);
+    }
+
+    serializeJson(tempBuffer, output); // Serialize the temporary buffer, which is now in reverse order
     return output;
 }
 
 String LogManager::getLastLogs(size_t lastCount) {
     String output;
-    size_t startIndex = logBuffer.size() > lastCount ? logBuffer.size() - lastCount : 0;
     JsonDocument lastLogs;
+    size_t endIndex = logBuffer_.size(); // Determine the end index
+    size_t startIndex = endIndex > lastCount ? endIndex - lastCount : 0; // Calculate the start index based on lastCount
 
-    for (size_t i = startIndex; i < logBuffer.size(); ++i) {
-        lastLogs.add(logBuffer[i]);
+    // Iterate in reverse within the determined range and add each element to lastLogs
+    for (size_t i = endIndex; i > startIndex; --i) {
+        lastLogs.add(logBuffer_[i - 1]); // Adjust index as we're decrementing i
     }
 
-    serializeJson(lastLogs, output);
+    serializeJson(lastLogs, output); // Serialize the lastLogs, which now contains the last logs in reverse order
     return output;
 }
 
 void LogManager::clearBuffer() {
-    logBuffer.clear();
+    logBuffer_.clear();
 }
 
 void LogManager::sendToDiscord(const String& message) {

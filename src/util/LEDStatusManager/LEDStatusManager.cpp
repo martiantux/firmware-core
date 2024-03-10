@@ -14,63 +14,67 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * For inquiries, please contact hello@distractedlabs.cc.
+ * For inquiries, please contact martiantux@proton.me | hello@distractedlabs.cc.
  */
 
 #include "util/LEDStatusManager/LEDStatusManager.h"
 
-#ifndef LED_BUILTIN
-#define LED_BUILTIN 2 // Default LED pin for ESP32 if not defined
-#endif
+LEDStatusManager::LEDStatusManager()
+    : status_(0),
+    lastBlinkTime_(0),
+    blinkCount_(0),
+    maxBlinks_(0),
+    ledState_(false) {}
 
-LEDStatusManager::LEDStatusManager() : _status(0), _lastBlinkTime(0), _blinkCount(0), _maxBlinks(0), _ledState(false) {
-    pinMode(LED_BUILTIN, OUTPUT);
+
+void LEDStatusManager::setup() {
+    pinMode(INDICATOR_LED_PIN, OUTPUT);
 }
 
 void LEDStatusManager::update() {
     unsigned long currentMillis = millis();
 
     // Check for pause between sets of blinks
-    if (_status != 0 && _blinkCount >= _maxBlinks * 2 && currentMillis - _lastBlinkTime < _pauseInterval) {
+    if (status_ != 0 && blinkCount_ >= maxBlinks_ * 2 && currentMillis - lastBlinkTime_ < pauseInterval_) {
         // In pause, do nothing until pause is over
         return;
     }
 
     // Reset pattern after pause or initially
-    if (_status != 0 && _blinkCount >= _maxBlinks * 2 && currentMillis - _lastBlinkTime >= _pauseInterval) {
+    if (status_ != 0 && blinkCount_ >= maxBlinks_ * 2 && currentMillis - lastBlinkTime_ >= pauseInterval_) {
         resetBlinkPattern();
         return; // Start new set of blinks after pause
     }
 
     // Continue with blink logic if not pausing and not resetting
-    if (_status != 0 && (currentMillis - _lastBlinkTime >= _blinkInterval) && _blinkCount < _maxBlinks * 2) {
+    if (status_ != 0 && (currentMillis - lastBlinkTime_ >= blinkInterval_) && blinkCount_ < maxBlinks_ * 2) {
         toggleLED();
-        _lastBlinkTime = currentMillis;
+        lastBlinkTime_ = currentMillis;
     }
 }
 
 void LEDStatusManager::setStatus(int status) {
-    _status = status;
+    status_ = status;
     resetBlinkPattern();
 
-    switch (_status) {
-        case 1: _maxBlinks = 1; break; // SD
-        case 2: _maxBlinks = 2; break; // WiFi
-        case 3: _maxBlinks = 3; break; // WAN
-        case 4: _maxBlinks = 4; break; // Config Error
-        default: _maxBlinks = 0; break; // LED off for OK status
+    switch (status_) {
+        case 1: maxBlinks_ = 1; break; // SD
+        case 2: maxBlinks_ = 2; break; // WiFi
+        case 3: maxBlinks_ = 3; break; // WAN
+        case 4: maxBlinks_ = 4; break; // Config Error
+        default: maxBlinks_ = 0; break; // LED off for OK status
     }
 }
 
 void LEDStatusManager::toggleLED() {
-    _ledState = !_ledState;
-    digitalWrite(LED_BUILTIN, _ledState ? HIGH : LOW);
-    _blinkCount++;
+    ledState_ = !ledState_;
+    digitalWrite(INDICATOR_LED_PIN, ledState_ ? HIGH : LOW);
+    blinkCount_++;
 }
 
 void LEDStatusManager::resetBlinkPattern() {
-    _blinkCount = 0;
-    _lastBlinkTime = millis();
-    digitalWrite(LED_BUILTIN, LOW); // Ensure LED is off during pause
-    _ledState = false;
+    blinkCount_ = 0;
+    lastBlinkTime_ = millis();
+    digitalWrite(INDICATOR_LED_PIN, LOW); // Ensure LED is off during pause
+    ledState_ = false;
 }

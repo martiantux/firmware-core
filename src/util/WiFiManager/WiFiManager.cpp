@@ -14,15 +14,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * For inquiries, please contact hello@distractedlabs.cc.
+ * For inquiries, please contact martiantux@proton.me | hello@distractedlabs.cc.
  */
 
 #include "util/WiFiManager/WiFiManager.h"
 #include "util/config.h"
 
-WiFiManager::WiFiManager() : _lastCheckTime(0), _attemptingConnection(false), _reconnectionAttempts(0) {
-    LogManager::getInstance().log(INFO, "WiFiManager initialized");
-}
+WiFiManager::WiFiManager()
+    : lastCheckTime_(0),
+    attemptingConnection_(false),
+    reconnectionAttempts_(0) {}
+
 
 void WiFiManager::setup() {
     WiFi.mode(WIFI_STA);
@@ -34,52 +36,51 @@ void WiFiManager::setup() {
     LogManager::getInstance().log(INFO, "mDNS responder started");
 
     // Register mDNS services
+    String servicesLog = "Registered mDNS service(s): ";
     for (const auto& service : mdnsServices) {
-        String logMessage = String("Registered mDNS service: ") + service.service;
-        LogManager::getInstance().log(INFO, logMessage);
+        servicesLog = servicesLog + ", " + service.service;
     }
+    LogManager::getInstance().log(INFO, servicesLog);
     LogManager::getInstance().log(INFO, "WiFiManager setup complete");
 }
 
 void WiFiManager::update() {
-    if (WiFi.status() == WL_CONNECTED && !_attemptingConnection) { return; }  // If connected, no further action needed
+    if (WiFi.status() == WL_CONNECTED && !attemptingConnection_) { return; }  // If connected, no further action needed
 
-    if (_reconnectionAttempts > 5) {  // After 5 failed attempts, reset the WiFi module
-        LogManager::getInstance().log(FATAL, "Maximum reconnection attempts reached. Rebooting.");
+    if (reconnectionAttempts_ > 5) {  // After 5 failed attempts, reset the WiFi module
+        LogManager::getInstance().log(ERROR, "Maximum reconnection attempts reached. Rebooting.");
         rebootDevice();
-        _reconnectionAttempts = 0;
+        reconnectionAttempts_ = 0;
     }
 
-    if (millis() - _lastCheckTime > calculateBackoffDuration()) {
+    if (millis() - lastCheckTime_ > calculateBackoffDuration()) {
         attemptConnection();
     }
 }
 
 void WiFiManager::attemptConnection() {
-    if (WiFi.status() != WL_CONNECTED && !_attemptingConnection) {
+    if (WiFi.status() != WL_CONNECTED && !attemptingConnection_) {
         LogManager::getInstance().log(INFO, "Attempting WiFi connection...");
         WiFi.config(WIFI_IP, WIFI_GATEWAY, WIFI_SUBNET, WIFI_PRIMARY_DNS, WIFI_SECONDARY_DNS);
         WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-        _attemptingConnection = true;
-        _lastCheckTime = millis();
-        _reconnectionAttempts++;
+        attemptingConnection_ = true;
+        lastCheckTime_ = millis();
+        reconnectionAttempts_++;
         LEDStatusManager::getInstance().setStatus(2); // Indicate WiFi connection attempt
-    } else if (_attemptingConnection && millis() - _lastCheckTime > 20000) {
+    } else if (attemptingConnection_ && millis() - lastCheckTime_ > 20000) {
         LogManager::getInstance().log(WARN, "Connection attempt timed out.");
-        _attemptingConnection = false;
+        attemptingConnection_ = false;
     } else if (WiFi.status() == WL_CONNECTED) {
-        String details = "WiFi Details: ";
+        String details = "WiFi connected: ";
         details += "SSID: " + WiFi.SSID() + " | ";
         details += "IP Address: " + WiFi.localIP().toString() + " | ";
         details += "Signal Strength: " + String(WiFi.RSSI()) + " dBm | ";
         details += "Channel: " + String(WiFi.channel()) + "";
 
-        LogManager::getInstance().log(INFO, "WiFi connected succesfully:");
-
         LogManager::getInstance().log(INFO, details.c_str());
 
-        _attemptingConnection = false;
-        _reconnectionAttempts = 0;
+        attemptingConnection_ = false;
+        reconnectionAttempts_ = 0;
         LEDStatusManager::getInstance().setStatus(0); // WiFi connected, turn off LED
     }
 }
@@ -91,11 +92,6 @@ void WiFiManager::rebootDevice() {
 }
 
 unsigned long WiFiManager::calculateBackoffDuration() {
-    unsigned long backoffDuration = 3 * pow(2, _reconnectionAttempts - 1) * 1000;  // Start with 3 seconds
+    unsigned long backoffDuration = 3 * pow(2, reconnectionAttempts_ - 1) * 1000;  // Start with 3 seconds
     return backoffDuration;
-}
-
-void WiFiManager::logDebug(const char* message) {
-    // Implement logging later, for now print to serial.
-    Serial.println(message);
 }

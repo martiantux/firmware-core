@@ -14,33 +14,39 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  *
- * For inquiries, please contact hello@distractedlabs.cc.
+ * For inquiries, please contact martiantux@proton.me | hello@distractedlabs.cc.
  */
 
 #ifndef LEDStatusManager_h
 #define LEDStatusManager_h
 
 #include <Arduino.h>
+#include "util/config.h"
 
 class LEDStatusManager {
 public:
-    static LEDStatusManager& getInstance() {
-        static LEDStatusManager instance;       // Singleton instance
+    static LEDStatusManager& getInstance() {    // Singleton instance
+        static LEDStatusManager instance;
         return instance;
     }
 
-    void update();                              // Periodically called to manage WiFi connection
-    void setStatus(int status);                 // Sets the LED status, controlling its blinking pattern
+    void setup();
+    void update();
+    void setStatus(int status);
 
 private:
-    LEDStatusManager();                         // Private constructor for singleton
-    int _status;                                // Current LED status
-    unsigned long _lastBlinkTime;               // Timestamp of the last LED blink
-    const unsigned long _blinkInterval = 200;   // Duration of each blink in milliseconds
-    const unsigned long _pauseInterval = 2000;  // Pause duration between sets of blinks in milliseconds
-    int _blinkCount;                            // Current count of blinks in the ongoing sequence
-    int _maxBlinks;                             // Maximum number of blinks in the current pattern
-    bool _ledState;                             // Current state of the LED (ON/OFF)
+    LEDStatusManager();                         // Private constructor/destructor for singleton
+    ~LEDStatusManager() = default;
+    LEDStatusManager(const LEDStatusManager&) = delete;
+    LEDStatusManager& operator=(const LEDStatusManager&) = delete;
+
+    int status_;                                // Current LED status
+    unsigned long lastBlinkTime_;               // Timestamp of the last LED blink
+    const unsigned long blinkInterval_ = 200;   // Duration of each blink in milliseconds
+    const unsigned long pauseInterval_ = 2000;  // Pause duration between sets of blinks in milliseconds
+    int blinkCount_;                            // Current count of blinks in the ongoing sequence
+    int maxBlinks_;                             // Maximum number of blinks in the current pattern
+    bool ledState_;                             // Current state of the LED (ON/OFF)
 
     void toggleLED();                           // Toggles the current state of the LED
     void resetBlinkPattern();                   // Resets the blinking pattern based on the current status

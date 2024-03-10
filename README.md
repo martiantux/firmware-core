@@ -49,4 +49,4 @@ For inquiries or further information, contact martiantux@proton.me or hello@dist
 Stay connected and support my projects:
 - [Follow on Instagram](https://instagram.com/martiantux)
 - [Chat on Telegram](https://t.me/martiantux)
-- [Support on Patreon](https://patreon.com/martiantux)
+- [Follow on Patreon](https://patreon.com/martiantux)
